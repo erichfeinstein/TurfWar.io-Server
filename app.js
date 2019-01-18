@@ -1,6 +1,7 @@
 var express = require('express');
 var http = require('http');
 var socketio = require('socket.io');
+var geolib = require('geolib');
 const compression = require('compression');
 const session = require('express-session');
 const SequelizeStore = require('connect-session-sequelize')(session.Store);
@@ -80,20 +81,39 @@ websocket.on('connection', async socket => {
   //Capture a location
   socket.on('capture', async locationData => {
     console.log('Player capturing:', locationData);
-    //Logic to delete TODO
-
-    // const teamId = locationData.teamId;
+    const latitude = locationData.latitude;
+    const longitude = locationData.longitude;
     const userId = locationData.userId;
+    const user = await User.findOne({
+      where: { id: userId },
+      include: [{ model: Team }],
+    });
 
+    //Filter this down to more reasonable range instead of all points
+    const capPoints = await Capture.findAll({
+      include: [{ model: User, include: [{ model: Team }] }],
+    });
+    capPoints.forEach(cap => {
+      if (
+        geolib.getDistance(
+          { latitude, longitude },
+          { latitude: cap.latitude, longitude: cap.longitude }
+        ) <
+        CAP_RADIUS * 2
+      ) {
+        console.log('In range of another cap');
+        //Broadcast to clients to remove this cap TODO
+        if (cap.user.team.id !== user.team.id) {
+          cap.destroy();
+        } else {
+          console.log('It is a cap of the same team');
+        }
+      }
+    });
     try {
-      const user = await User.findOne({
-        where: { id: userId },
-        include: [{ model: Team }],
-      });
-      // const team = await user.getTeam();
       const newCap = await Capture.create({
-        latitude: locationData.latitude,
-        longitude: locationData.longitude,
+        latitude,
+        longitude,
         radius: CAP_RADIUS,
       });
       await newCap.setUser(user);
@@ -104,7 +124,6 @@ websocket.on('connection', async socket => {
         longitude: newCap.longitude,
         radius: CAP_RADIUS,
         user,
-        // team,
       });
     } catch (err) {
       console.log(err);

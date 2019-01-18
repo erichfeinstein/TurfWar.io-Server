@@ -48,6 +48,10 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.get('*', function(req, res) {
+  res.sendfile(__dirname+'/index.html');
+};
+
 app.post('/login', async (req, res, next) => {
   try {
     console.log('user attemping login!');
@@ -70,7 +74,7 @@ app.post('/login', async (req, res, next) => {
 sessionStore.sync();
 var server = http.Server(app);
 var websocket = socketio(server);
-server.listen(3000, () => console.log('listening on 3000'));
+server.listen(process.env.PORT || 3000, () => console.log('app is running!'));
 
 // The event will be called when a client is connected.
 websocket.on('connection', async socket => {

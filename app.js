@@ -48,6 +48,7 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+//Landing page for Heroku
 app.get('*', function(req, res) {
   res.sendfile('./index.html');
 });
@@ -97,8 +98,7 @@ websocket.on('connection', async socket => {
       include: [{ model: Team }],
     });
 
-    //Filter this down to more reasonable range instead of all points
-    //TEST THIS!
+    //Look at any nearby cap points for collisions
     const capPoints = await Capture.findAll({
       where: {
         [and]: {
@@ -129,6 +129,8 @@ websocket.on('connection', async socket => {
         console.log('In range of another cap');
         //Broadcast to clients to remove this cap TODO
         if (cap.user.team.id !== user.team.id) {
+          socket.emit('destroy-cap', { id: cap.id });
+          socket.broadcast.emit('destroy-cap', { id: cap.id });
           cap.destroy();
         } else {
           console.log('It is a cap of the same team');

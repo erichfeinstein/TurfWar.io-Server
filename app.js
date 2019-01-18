@@ -49,8 +49,8 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.get('*', function(req, res) {
-  res.sendfile(__dirname+'/index.html');
-};
+  res.sendfile('./index.html');
+});
 
 app.post('/login', async (req, res, next) => {
   try {

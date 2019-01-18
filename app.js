@@ -9,6 +9,8 @@ const db = require('./db');
 const sessionStore = new SequelizeStore({ db });
 const passport = require('passport');
 
+const { and, gt, lt } = require('sequelize').Op;
+
 if (process.env.NODE_ENV === 'test') {
   after('close the session store', () => sessionStore.stopExpiringSessions());
 }
@@ -24,6 +26,8 @@ passport.deserializeUser(async (id, done) => {
   }
 });
 
+//This distance is used to query the Capture table for all nearby capture points when a user tries to capture a new point
+const MAX_DISTANCE_AWAY = 0.05;
 const CAP_RADIUS = 200;
 
 const { User, Team, Capture } = require('./db/models');
@@ -90,7 +94,24 @@ websocket.on('connection', async socket => {
     });
 
     //Filter this down to more reasonable range instead of all points
+    //TEST THIS!
     const capPoints = await Capture.findAll({
+      where: {
+        [and]: {
+          latitude: {
+            [and]: [
+              { [gt]: latitude - MAX_DISTANCE_AWAY },
+              { [lt]: latitude + MAX_DISTANCE_AWAY },
+            ],
+          },
+          longitude: {
+            [and]: [
+              { [gt]: longitude - MAX_DISTANCE_AWAY },
+              { [lt]: longitude + MAX_DISTANCE_AWAY },
+            ],
+          },
+        },
+      },
       include: [{ model: User, include: [{ model: Team }] }],
     });
     capPoints.forEach(cap => {

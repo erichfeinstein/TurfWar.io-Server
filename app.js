@@ -118,7 +118,16 @@ websocket.on('connection', async socket => {
       });
       await newCap.setUser(user);
 
+      //Send new cap info to client who capped
       socket.emit('new-cap', {
+        id: newCap.id,
+        latitude: newCap.latitude,
+        longitude: newCap.longitude,
+        radius: CAP_RADIUS,
+        user,
+      });
+      //Send new cap info to all other clients
+      socket.broadcast.emit('new-cap', {
         id: newCap.id,
         latitude: newCap.latitude,
         longitude: newCap.longitude,

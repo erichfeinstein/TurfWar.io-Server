@@ -73,7 +73,7 @@ websocket.on('connection', async socket => {
 
   //Send client current cap info
   const allCaps = await Capture.findAll({
-    include: [{ model: Team }],
+    include: [{ model: User, include: [{ model: Team }] }],
   });
   socket.emit('all-captures', allCaps);
 
@@ -82,23 +82,29 @@ websocket.on('connection', async socket => {
     console.log('Player capturing:', locationData);
     //Logic to delete TODO
 
-    const teamId = locationData.teamId;
+    // const teamId = locationData.teamId;
+    const userId = locationData.userId;
 
     try {
-      const team = await Team.findById(teamId);
+      const user = await User.findOne({
+        where: { id: userId },
+        include: [{ model: Team }],
+      });
+      // const team = await user.getTeam();
       const newCap = await Capture.create({
         latitude: locationData.latitude,
         longitude: locationData.longitude,
         radius: CAP_RADIUS,
       });
-      await newCap.setTeam(team.id);
+      await newCap.setUser(user);
 
       socket.emit('new-cap', {
         id: newCap.id,
         latitude: newCap.latitude,
         longitude: newCap.longitude,
         radius: CAP_RADIUS,
-        team,
+        user,
+        // team,
       });
     } catch (err) {
       console.log(err);

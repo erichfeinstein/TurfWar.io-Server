@@ -3,7 +3,7 @@ const Capture = require('./capture');
 const Team = require('./team');
 
 User.belongsTo(Team);
-Capture.belongsTo(Team);
+Capture.belongsTo(User);
 
 module.exports = {
   User,

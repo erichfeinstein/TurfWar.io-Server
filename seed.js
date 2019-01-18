@@ -70,12 +70,12 @@ async function seed() {
   await users[0].setTeam(teams[0].id);
   await users[1].setTeam(teams[0].id);
   await users[2].setTeam(teams[1].id);
-  await caps[0].setTeam(teams[0].id);
-  await caps[1].setTeam(teams[1].id);
-  await caps[2].setTeam(teams[0].id);
-  await caps[3].setTeam(teams[0].id);
-  await caps[4].setTeam(teams[1].id);
-  await caps[5].setTeam(teams[0].id);
+  await caps[0].setUser(users[0].id);
+  await caps[1].setUser(users[1].id);
+  await caps[2].setUser(users[0].id);
+  await caps[3].setUser(users[2].id);
+  await caps[4].setUser(users[1].id);
+  await caps[5].setUser(users[2].id);
 
   console.log(`seeded successfully`);
 }

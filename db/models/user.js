@@ -12,6 +12,10 @@ const User = db.define('user', {
     type: Sequelize.STRING,
     allowNull: false,
   },
+  capCount: {
+    type: Sequelize.INTEGER,
+    defaultValue: 3,
+  },
   password: {
     type: Sequelize.STRING,
     // Making `.password` act like a func hides it when serializing to JSON.

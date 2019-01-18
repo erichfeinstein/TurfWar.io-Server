@@ -50,6 +50,21 @@ async function seed() {
       longitude: -74.005,
       radius: 200,
     }),
+    Capture.create({
+      latitude: 41.019,
+      longitude: -73.75,
+      radius: 200,
+    }),
+    Capture.create({
+      latitude: 41.0419,
+      longitude: -73.79,
+      radius: 200,
+    }),
+    Capture.create({
+      latitude: 41.038,
+      longitude: -73.77,
+      radius: 200,
+    }),
   ]);
 
   await users[0].setTeam(teams[0].id);
@@ -58,6 +73,9 @@ async function seed() {
   await caps[0].setTeam(teams[0].id);
   await caps[1].setTeam(teams[1].id);
   await caps[2].setTeam(teams[0].id);
+  await caps[3].setTeam(teams[0].id);
+  await caps[4].setTeam(teams[1].id);
+  await caps[5].setTeam(teams[0].id);
 
   console.log(`seeded successfully`);
 }

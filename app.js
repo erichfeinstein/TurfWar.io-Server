@@ -14,7 +14,6 @@ if (process.env.NODE_ENV === 'test') {
 
 // passport registration
 passport.serializeUser((user, done) => done(null, user.id));
-
 passport.deserializeUser(async (id, done) => {
   try {
     const user = await db.models.user.findById(id);
@@ -31,10 +30,8 @@ const { User, Team, Capture } = require('./db/models');
 var app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-// compression middleware
 app.use(compression());
 
-// const createApp = () => {
 app.use(
   session({
     secret: process.env.SESSION_SECRET || 'TEST',
@@ -66,8 +63,6 @@ app.post('/login', async (req, res, next) => {
   }
 });
 sessionStore.sync();
-// };
-
 var server = http.Server(app);
 var websocket = socketio(server);
 server.listen(3000, () => console.log('listening on 3000'));
@@ -86,20 +81,27 @@ websocket.on('connection', async socket => {
   socket.on('capture', async locationData => {
     console.log('Player capturing:', locationData);
     //Logic to delete TODO
-    const newCap = await Capture.create({
-      latitude: locationData.latitude,
-      longitude: locationData.longitude,
-      radius: CAP_RADIUS,
-    });
-    socket.emit('new-cap', newCap);
+
+    const teamId = locationData.teamId;
+
+    try {
+      const team = await Team.findById(teamId);
+      const newCap = await Capture.create({
+        latitude: locationData.latitude,
+        longitude: locationData.longitude,
+        radius: CAP_RADIUS,
+      });
+      await newCap.setTeam(team.id);
+
+      socket.emit('new-cap', {
+        id: newCap.id,
+        latitude: newCap.latitude,
+        longitude: newCap.longitude,
+        radius: CAP_RADIUS,
+        team,
+      });
+    } catch (err) {
+      console.log(err);
+    }
   });
 });
-
-// const syncDb = () => db.sync();
-
-// async function bootApp() {
-//   await sessionStore.sync();
-//   await syncDb();
-//   await createApp();
-// }
-// bootApp();

@@ -81,11 +81,11 @@ server.listen(process.env.PORT || 3000, () => console.log('app is running!'));
 websocket.on('connection', async socket => {
   console.log('A client just joined on', socket.id);
 
-  //Send client current cap info
+  //Send client current cap info and the current radius for new caps
   const allCaps = await Capture.findAll({
     include: [{ model: User, include: [{ model: Team }] }],
   });
-  socket.emit('all-captures', allCaps);
+  socket.emit('all-captures', allCaps, CAP_RADIUS);
 
   //Capture a location
   socket.on('capture', async locationData => {

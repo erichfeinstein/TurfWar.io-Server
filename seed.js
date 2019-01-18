@@ -56,7 +56,7 @@ async function seed() {
       radius: 200,
     }),
     Capture.create({
-      latitude: 41.0419,
+      latitude: 41.045,
       longitude: -73.79,
       radius: 200,
     }),
@@ -67,8 +67,8 @@ async function seed() {
     }),
     //FSA coords
     Capture.create({
-      latitude: 40.706,
-      longitude: -74.01,
+      latitude: 40.707,
+      longitude: -74.011,
       radius: 200,
     }),
   ]);
@@ -78,7 +78,7 @@ async function seed() {
   await users[2].setTeam(teams[1].id);
   await caps[0].setUser(users[0].id);
   await caps[1].setUser(users[1].id);
-  await caps[2].setUser(users[0].id);
+  await caps[2].setUser(users[2].id);
   await caps[3].setUser(users[2].id);
   await caps[4].setUser(users[1].id);
   await caps[5].setUser(users[2].id);

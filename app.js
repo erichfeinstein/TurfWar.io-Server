@@ -57,6 +57,20 @@ app.get('/teams', async (req, res, next) => {
   }
 });
 
+app.get('/rememberme', async (req, res, next) => {
+  if (req.user) {
+    const team = await Team.findById(req.user.dataValues.teamId);
+    console.log(`Returning member of the ${team.name} team`);
+    const returningUserInfo = {
+      id: req.user.id,
+      username: req.user.username,
+      team,
+      capCount: req.user.capCount,
+    };
+    res.json(returningUserInfo);
+  } else res.json({});
+});
+
 //Landing page for Heroku
 app.get('*', function(req, res) {
   res.sendfile('./index.html');

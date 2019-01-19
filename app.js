@@ -90,23 +90,24 @@ app.post('/login', async (req, res, next) => {
 app.post('/signup', async (req, res, next) => {
   try {
     //Check that teamId is valid
-    console.log(req.body.teamId);
     const team = await Team.findById(req.body.teamId);
     console.log(`user signing up and joining ${team.name} team`);
-    const user = await User.create({
-      username: req.body.username,
-      password: req.body.password,
-    });
-    await user.setTeam(team.id);
-    if (!user) {
-      console.log('Problem creating account for user');
-      res.status(401).send('There was a problem creating your account');
-    } else {
-      req.login(user, err =>
-        err
-          ? next(err)
-          : res.json({ id: user.id, username: user.username, team })
-      );
+    if (team) {
+      const user = await User.create({
+        username: req.body.username,
+        password: req.body.password,
+      });
+      await user.setTeam(team.id);
+      if (!user) {
+        console.log('Problem creating account for user');
+        res.status(401).send('There was a problem creating your account');
+      } else {
+        req.login(user, err =>
+          err
+            ? next(err)
+            : res.json({ id: user.id, username: user.username, team })
+        );
+      }
     }
   } catch (err) {
     next(err);

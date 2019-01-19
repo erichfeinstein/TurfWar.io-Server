@@ -48,6 +48,15 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.get('/teams', async (req, res, next) => {
+  try {
+    const teams = await Team.findAll();
+    res.send(teams);
+  } catch (err) {
+    next(err);
+  }
+});
+
 //Landing page for Heroku
 app.get('*', function(req, res) {
   res.sendfile('./index.html');
@@ -55,9 +64,10 @@ app.get('*', function(req, res) {
 
 app.post('/login', async (req, res, next) => {
   try {
-    console.log('user attemping login!');
+    console.log('user attemping login');
     const user = await User.findOne({
       where: { username: req.body.username },
+      include: [{ model: Team }],
     });
     if (!user) {
       console.log('No such user found:', req.body.username);
@@ -66,12 +76,43 @@ app.post('/login', async (req, res, next) => {
       console.log('Incorrect password for user:', req.body.username);
       res.status(401).send('Wrong username and/or password');
     } else {
-      req.login(user, err => (err ? next(err) : res.json(user)));
+      req.login(user, err =>
+        err
+          ? next(err)
+          : res.json({ id: user.id, username: user.username, team: user.team })
+      );
     }
   } catch (err) {
     next(err);
   }
 });
+
+app.post('/signup', async (req, res, next) => {
+  try {
+    //Check that teamId is valid
+    console.log(req.body.teamId);
+    const team = await Team.findById(req.body.teamId);
+    console.log(`user signing up and joining ${team.name} team`);
+    const user = await User.create({
+      username: req.body.username,
+      password: req.body.password,
+    });
+    await user.setTeam(team.id);
+    if (!user) {
+      console.log('Problem creating account for user');
+      res.status(401).send('There was a problem creating your account');
+    } else {
+      req.login(user, err =>
+        err
+          ? next(err)
+          : res.json({ id: user.id, username: user.username, team })
+      );
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
 sessionStore.sync();
 var server = http.Server(app);
 var websocket = socketio(server);
@@ -98,71 +139,73 @@ websocket.on('connection', async socket => {
       include: [{ model: Team }],
     });
 
-    //Look at any nearby cap points for collisions
-    const capPoints = await Capture.findAll({
-      where: {
-        [and]: {
-          latitude: {
-            [and]: [
-              { [gt]: latitude - MAX_DISTANCE_AWAY },
-              { [lt]: latitude + MAX_DISTANCE_AWAY },
-            ],
-          },
-          longitude: {
-            [and]: [
-              { [gt]: longitude - MAX_DISTANCE_AWAY },
-              { [lt]: longitude + MAX_DISTANCE_AWAY },
-            ],
+    if (user) {
+      //Look at any nearby cap points for collisions
+      const capPoints = await Capture.findAll({
+        where: {
+          [and]: {
+            latitude: {
+              [and]: [
+                { [gt]: latitude - MAX_DISTANCE_AWAY },
+                { [lt]: latitude + MAX_DISTANCE_AWAY },
+              ],
+            },
+            longitude: {
+              [and]: [
+                { [gt]: longitude - MAX_DISTANCE_AWAY },
+                { [lt]: longitude + MAX_DISTANCE_AWAY },
+              ],
+            },
           },
         },
-      },
-      include: [{ model: User, include: [{ model: Team }] }],
-    });
-    capPoints.forEach(cap => {
-      if (
-        geolib.getDistance(
-          { latitude, longitude },
-          { latitude: cap.latitude, longitude: cap.longitude }
-        ) <
-        CAP_RADIUS * 2
-      ) {
-        console.log('In range of another cap');
-        //Broadcast to clients to remove this cap TODO
-        if (cap.user.team.id !== user.team.id) {
-          socket.emit('destroy-cap', { id: cap.id });
-          socket.broadcast.emit('destroy-cap', { id: cap.id });
-          cap.destroy();
-        } else {
-          console.log('It is a cap of the same team');
+        include: [{ model: User, include: [{ model: Team }] }],
+      });
+      capPoints.forEach(cap => {
+        if (
+          geolib.getDistance(
+            { latitude, longitude },
+            { latitude: cap.latitude, longitude: cap.longitude }
+          ) <
+          CAP_RADIUS * 2
+        ) {
+          console.log('In range of another cap');
+          //Broadcast to clients to remove this cap TODO
+          if (cap.user.team.id !== user.team.id) {
+            socket.emit('destroy-cap', { id: cap.id });
+            socket.broadcast.emit('destroy-cap', { id: cap.id });
+            cap.destroy();
+          } else {
+            console.log('It is a cap of the same team');
+          }
         }
-      }
-    });
-    try {
-      const newCap = await Capture.create({
-        latitude,
-        longitude,
-        radius: CAP_RADIUS,
       });
-      await newCap.setUser(user);
+      try {
+        const newCap = await Capture.create({
+          latitude,
+          longitude,
+          radius: CAP_RADIUS,
+        });
+        await newCap.setUser(user);
 
-      //Send new cap info to client who capped
-      socket.emit('new-cap', {
-        id: newCap.id,
-        latitude: newCap.latitude,
-        longitude: newCap.longitude,
-        radius: CAP_RADIUS,
-        user,
-      });
-      //Send new cap info to all other clients
-      socket.broadcast.emit('new-cap', {
-        id: newCap.id,
-        latitude: newCap.latitude,
-        longitude: newCap.longitude,
-        radius: CAP_RADIUS,
-        user,
-      });
-    } catch (err) {
-      console.log(err);
+        //Send new cap info to client who capped
+        socket.emit('new-cap', {
+          id: newCap.id,
+          latitude: newCap.latitude,
+          longitude: newCap.longitude,
+          radius: CAP_RADIUS,
+          user,
+        });
+        //Send new cap info to all other clients
+        socket.broadcast.emit('new-cap', {
+          id: newCap.id,
+          latitude: newCap.latitude,
+          longitude: newCap.longitude,
+          radius: CAP_RADIUS,
+          user,
+        });
+      } catch (err) {
+        console.log(err);
+      }
     }
   });
 });

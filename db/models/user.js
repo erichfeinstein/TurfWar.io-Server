@@ -8,10 +8,6 @@ const User = db.define('user', {
     unique: true,
     allowNull: false,
   },
-  name: {
-    type: Sequelize.STRING,
-    allowNull: false,
-  },
   capCount: {
     type: Sequelize.INTEGER,
     defaultValue: 3,
@@ -35,9 +31,6 @@ const User = db.define('user', {
   isAdmin: {
     type: Sequelize.BOOLEAN,
     defaultValue: false,
-  },
-  googleId: {
-    type: Sequelize.STRING,
   },
 });
 

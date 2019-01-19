@@ -3,6 +3,8 @@
 const db = require('./db');
 const { User, Team, Capture } = require('./db/models');
 
+const randomCoordinates = require('random-coordinates');
+
 async function seed() {
   await db.sync({ force: true });
   console.log('db synced!');
@@ -10,25 +12,24 @@ async function seed() {
   const teams = await Promise.all([
     Team.create({
       color: '#ff000090',
+      name: 'Red',
     }),
     Team.create({
       color: '#2200ff90',
+      name: 'Blue',
     }),
   ]);
 
   const users = await Promise.all([
     User.create({
-      name: 'Eric',
       username: 'eric',
       password: '123',
     }),
     User.create({
-      name: 'Justin',
       username: 'justin',
       password: '123',
     }),
     User.create({
-      name: 'Joseph',
       username: 'jo',
       password: '123',
     }),
@@ -72,6 +73,20 @@ async function seed() {
       radius: 200,
     }),
   ]);
+  //Let's go crazy
+  // Generate random coords
+  // Stretch goal: generate coords near big cities for 'bots'
+  // for (let i = 0; i < 1000; i++) {
+  //   const coords = randomCoordinates({ fixed: 2 }).split(' ');
+  //   console.log(coords);
+  //   const cap = await Capture.create({
+  //     latitude: parseFloat(coords[0]),
+  //     longitude: parseFloat(coords[1]),
+  //     radius: 30000,
+  //   });
+  //   const userId = Math.floor(Math.random() * 3) + 1;
+  //   await cap.setUser(userId);
+  // }
 
   await users[0].setTeam(teams[0].id);
   await users[1].setTeam(teams[0].id);

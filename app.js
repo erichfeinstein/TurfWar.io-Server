@@ -210,3 +210,18 @@ websocket.on('connection', async socket => {
     }
   });
 });
+
+//Schedule give users a set amount of caps every day at midnight
+const RESET_CAP_COUNT = 5;
+const schedule = require('node-schedule');
+//Enter cron date with schedule job
+const maintenance = schedule.scheduleJob('0 0 0 * * *', async () => {
+  await User.update(
+    { capCount: RESET_CAP_COUNT },
+    {
+      where: {
+        capCount: { [lt]: RESET_CAP_COUNT },
+      },
+    }
+  );
+});

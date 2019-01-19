@@ -131,7 +131,7 @@ websocket.on('connection', async socket => {
 
   //Capture a location
   socket.on('capture', async locationData => {
-    console.log('Player capturing:', locationData);
+    console.log('Player attempting capture', locationData);
     const latitude = locationData.latitude;
     const longitude = locationData.longitude;
     const userId = locationData.userId;
@@ -139,8 +139,9 @@ websocket.on('connection', async socket => {
       where: { id: userId },
       include: [{ model: Team }],
     });
+    const userCapCount = user.capCount;
 
-    if (user) {
+    if (user && userCapCount >= 1) {
       //Look at any nearby cap points for collisions
       const capPoints = await Capture.findAll({
         where: {
@@ -187,6 +188,8 @@ websocket.on('connection', async socket => {
           radius: CAP_RADIUS,
         });
         await newCap.setUser(user);
+        await user.update({ capCount: userCapCount - 1 });
+        if (user.capCount < 1) socket.emit('out-of-caps');
 
         //Send new cap info to client who capped
         socket.emit('new-cap', {
@@ -207,12 +210,14 @@ websocket.on('connection', async socket => {
       } catch (err) {
         console.log(err);
       }
+    } else {
+      socket.emit('out-of-caps');
     }
   });
 });
 
 //Schedule give users a set amount of caps every day at midnight
-const RESET_CAP_COUNT = 5;
+const RESET_CAP_COUNT = 15;
 const schedule = require('node-schedule');
 //Enter cron date with schedule job
 const maintenance = schedule.scheduleJob('0 0 0 * * *', async () => {

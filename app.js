@@ -64,7 +64,6 @@ app.get('*', function(req, res) {
 
 app.post('/login', async (req, res, next) => {
   try {
-    console.log('user attemping login');
     const user = await User.findOne({
       where: { username: req.body.username },
       include: [{ model: Team }],
@@ -76,10 +75,16 @@ app.post('/login', async (req, res, next) => {
       console.log('Incorrect password for user:', req.body.username);
       res.status(401).send('Wrong username and/or password');
     } else {
+      //We send the user their cap count info so they can see if they have caps available, but capping uses info from the DB
       req.login(user, err =>
         err
           ? next(err)
-          : res.json({ id: user.id, username: user.username, team: user.team })
+          : res.json({
+              id: user.id,
+              username: user.username,
+              team: user.team,
+              capCount: user.capCount,
+            })
       );
     }
   } catch (err) {

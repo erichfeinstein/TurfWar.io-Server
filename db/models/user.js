@@ -7,6 +7,9 @@ const User = db.define('user', {
     type: Sequelize.STRING,
     unique: true,
     allowNull: false,
+    validate: {
+      notEmpty: true,
+    },
   },
   capCount: {
     type: Sequelize.INTEGER,

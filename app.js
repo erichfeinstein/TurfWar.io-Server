@@ -60,12 +60,14 @@ app.get('/teams', async (req, res, next) => {
 app.get('/rememberme', async (req, res, next) => {
   if (req.user) {
     const team = await Team.findById(req.user.dataValues.teamId);
+    const capsPlaced = await Capture.findAll({ where: req.user.dataValues.id });
     console.log(`Returning member of the ${team.name} team`);
     const returningUserInfo = {
       id: req.user.id,
       username: req.user.username,
       team,
       capCount: req.user.capCount,
+      capsPlaced,
     };
     res.json(returningUserInfo);
   } else res.json({});
@@ -104,6 +106,13 @@ app.post('/login', async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
+app.post('/logout', (req, res) => {
+  console.log('user signing out');
+  req.logout();
+  req.session.destroy();
+  res.send('logged out');
 });
 
 app.post('/signup', async (req, res, next) => {

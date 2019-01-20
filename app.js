@@ -133,13 +133,6 @@ app.post('/signup', async (req, res, next) => {
   }
 });
 
-// async function getTeamScores() {
-//   const allCaps = await Capture.findAll({
-//     include: [{ model: User, include: [{ model: Team }] }],
-//   });
-
-// }
-
 sessionStore.sync();
 var server = http.Server(app);
 var websocket = socketio(server);
@@ -148,7 +141,6 @@ server.listen(process.env.PORT || 3000, () => console.log('app is running!'));
 // The event will be called when a client is connected.
 websocket.on('connection', async socket => {
   console.log('A client just joined on', socket.id);
-
   //Send client current cap info and the current radius for new caps
   const allCaps = await Capture.findAll({
     include: [{ model: User, include: [{ model: Team }] }],

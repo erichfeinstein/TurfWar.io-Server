@@ -3,7 +3,7 @@
 const db = require('./db');
 const { User, Team, Capture } = require('./db/models');
 
-const randomCoordinates = require('random-coordinates');
+const randomLocation = require('random-location');
 
 async function seed() {
   await db.sync({ force: true });
@@ -26,71 +26,107 @@ async function seed() {
       password: '123',
     }),
     User.create({
-      username: 'justin',
-      password: '123',
-    }),
-    User.create({
       username: 'jo',
       password: '123',
     }),
+    User.create({
+      username: 'justin',
+      password: '123',
+    }),
   ]);
+
+  const defaultRadius = 200;
 
   const caps = await Promise.all([
     Capture.create({
       latitude: 40.7205,
       longitude: -74.01,
-      radius: 200,
+      radius: defaultRadius,
     }),
     Capture.create({
       latitude: 40.7305,
       longitude: -74.005,
-      radius: 200,
+      radius: defaultRadius,
     }),
     Capture.create({
       latitude: 40.7105,
       longitude: -74.005,
-      radius: 200,
+      radius: defaultRadius,
     }),
     Capture.create({
       latitude: 41.019,
       longitude: -73.75,
-      radius: 200,
+      radius: defaultRadius,
     }),
     Capture.create({
       latitude: 41.045,
       longitude: -73.79,
-      radius: 200,
+      radius: defaultRadius,
     }),
     Capture.create({
       latitude: 41.038,
       longitude: -73.77,
-      radius: 200,
+      radius: defaultRadius,
     }),
     //FSA coords
     Capture.create({
       latitude: 40.707,
       longitude: -74.011,
-      radius: 200,
+      radius: defaultRadius,
     }),
   ]);
   //Let's go crazy
   // Generate random coords
   // Stretch goal: generate coords near big cities for 'bots'
-  // for (let i = 0; i < 1000; i++) {
-  //   const coords = randomCoordinates({ fixed: 2 }).split(' ');
-  //   console.log(coords);
-  //   const cap = await Capture.create({
-  //     latitude: parseFloat(coords[0]),
-  //     longitude: parseFloat(coords[1]),
-  //     radius: 30000,
-  //   });
-  //   const userId = Math.floor(Math.random() * 3) + 1;
-  //   await cap.setUser(userId);
-  // }
+
+  const lowerManhattan = {
+    latitude: 40.719,
+    longitude: -73.997,
+  };
+  const noho = {
+    latitude: 40.729,
+    longitude: -73.992,
+  };
+  const midtown = {
+    latitude: 40.752,
+    longitude: -73.986,
+  };
+  const bronx = {
+    latitude: 40.849,
+    longitude: -73.8788,
+  };
+  const yankeeStadium = {
+    latitude: 40.829,
+    longitude: -73.926,
+  };
+  const myRouteToFSA = {
+    latitude: 40.917,
+    longitude: -73.851,
+  };
+
+  for (let i = 0; i <= 750; i++) {
+    let coords;
+    if (i <= 30)
+      coords = randomLocation.randomCirclePoint(lowerManhattan, 1100);
+    else if (i <= 60) coords = randomLocation.randomCirclePoint(midtown, 1500);
+    else if (i <= 90) coords = randomLocation.randomCirclePoint(noho, 1500);
+    else if (i <= 300) coords = randomLocation.randomCirclePoint(bronx, 4000);
+    else if (i <= 500)
+      coords = randomLocation.randomCirclePoint(yankeeStadium, 3000);
+    else coords = randomLocation.randomCirclePoint(myRouteToFSA, 5000);
+    console.log(coords);
+    const cap = await Capture.create({
+      latitude: coords.latitude,
+      longitude: coords.longitude,
+      radius: defaultRadius,
+    });
+    const userId = Math.floor(Math.random() * 2) + 1;
+    await cap.setUser(userId);
+  }
 
   await users[0].setTeam(teams[0].id);
-  await users[1].setTeam(teams[0].id);
-  await users[2].setTeam(teams[1].id);
+  await users[1].setTeam(teams[1].id);
+  await users[2].setTeam(teams[0].id);
   await caps[0].setUser(users[0].id);
   await caps[1].setUser(users[1].id);
   await caps[2].setUser(users[2].id);

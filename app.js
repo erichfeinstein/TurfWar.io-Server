@@ -133,6 +133,13 @@ app.post('/signup', async (req, res, next) => {
   }
 });
 
+// async function getTeamScores() {
+//   const allCaps = await Capture.findAll({
+//     include: [{ model: User, include: [{ model: Team }] }],
+//   });
+
+// }
+
 sessionStore.sync();
 var server = http.Server(app);
 var websocket = socketio(server);
@@ -192,8 +199,8 @@ websocket.on('connection', async socket => {
           console.log('In range of another cap');
           //Broadcast to clients to remove this cap TODO
           if (cap.user.team.id !== user.team.id) {
-            socket.emit('destroy-cap', { id: cap.id });
-            socket.broadcast.emit('destroy-cap', { id: cap.id });
+            socket.emit('destroy-cap', { cap });
+            socket.broadcast.emit('destroy-cap', { cap });
             cap.destroy();
           } else {
             console.log('It is a cap of the same team');
@@ -239,7 +246,7 @@ websocket.on('connection', async socket => {
 const RESET_CAP_COUNT = 15;
 const schedule = require('node-schedule');
 //Enter cron date with schedule job
-const maintenance = schedule.scheduleJob('0 0 0 * * *', async () => {
+const maintenance = schedule.scheduleJob('30 32 18 * * *', async () => {
   await User.update(
     { capCount: RESET_CAP_COUNT },
     {
@@ -248,4 +255,6 @@ const maintenance = schedule.scheduleJob('0 0 0 * * *', async () => {
       },
     }
   );
+
+  websocket.emit('daily-reset');
 });

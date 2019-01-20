@@ -5,6 +5,8 @@ const { User, Team, Capture } = require('./db/models');
 
 const randomLocation = require('random-location');
 
+const defaultRadius = 80;
+
 async function seed() {
   await db.sync({ force: true });
   console.log('db synced!');
@@ -17,6 +19,11 @@ async function seed() {
     Team.create({
       color: '#2200ff90',
       name: 'Blue',
+    }),
+    //Stretch goal
+    Team.create({
+      color: '#FFD70090',
+      name: 'Treasure',
     }),
   ]);
 
@@ -33,9 +40,11 @@ async function seed() {
       username: 'justin',
       password: '123',
     }),
+    User.create({
+      username: 'TreasureProvider',
+      password: 'supersecretpassword',
+    }),
   ]);
-
-  const defaultRadius = 200;
 
   const caps = await Promise.all([
     Capture.create({
@@ -75,10 +84,8 @@ async function seed() {
       radius: defaultRadius,
     }),
   ]);
-  //Let's go crazy
-  // Generate random coords
-  // Stretch goal: generate coords near big cities for 'bots'
 
+  // Generate random coords in NYC
   const lowerManhattan = {
     latitude: 40.719,
     longitude: -73.997,
@@ -104,44 +111,86 @@ async function seed() {
     longitude: -73.851,
   };
 
-  for (let i = 0; i <= 750; i++) {
-    let coords;
-    if (i <= 30)
-      coords = randomLocation.randomCirclePoint(lowerManhattan, 1100);
-    else if (i <= 60) coords = randomLocation.randomCirclePoint(midtown, 1500);
-    else if (i <= 90) coords = randomLocation.randomCirclePoint(noho, 1500);
-    else if (i <= 300) coords = randomLocation.randomCirclePoint(bronx, 4000);
-    else if (i <= 500)
-      coords = randomLocation.randomCirclePoint(yankeeStadium, 3000);
-    else coords = randomLocation.randomCirclePoint(myRouteToFSA, 5000);
-    console.log(coords);
+  // for (let i = 0; i <= 200; i++) {
+  //   let coords;
+  //   if (i <= 30)
+  //     coords = randomLocation.randomCirclePoint(lowerManhattan, 1100);
+  //   else if (i <= 30) coords = randomLocation.randomCirclePoint(midtown, 1500);
+  //   else if (i <= 50) coords = randomLocation.randomCirclePoint(noho, 1500);
+  //   else if (i <= 100) coords = randomLocation.randomCirclePoint(bronx, 4400);
+  //   else if (i <= 120)
+  //     coords = randomLocation.randomCirclePoint(yankeeStadium, 3000);
+  //   else coords = randomLocation.randomCirclePoint(myRouteToFSA, 5000);
+  //   console.log(coords);
+
+  //   const cap = await Capture.create({
+  //     latitude: coords.latitude,
+  //     longitude: coords.longitude,
+  //     radius: defaultRadius,
+  //   });
+  //   const userId = Math.floor(Math.random() * 3) + 1;
+  //   await cap.setUser(userId);
+  // }
+  await users[0].setTeam(teams[0].id);
+  await users[1].setTeam(teams[1].id);
+  await users[2].setTeam(teams[0].id);
+  await users[3].setTeam(teams[2].id);
+  Promise.all([
+    caps[0].setUser(users[0].id),
+    caps[1].setUser(users[1].id),
+    caps[2].setUser(users[2].id),
+    caps[3].setUser(users[2].id),
+    caps[4].setUser(users[1].id),
+    caps[5].setUser(users[2].id),
+  ]); //FSA capture point
+  await caps[6].setUser(users[2].id);
+
+  console.log(`seeded successfully`);
+}
+
+async function generateTreasure() {
+  const treasureSrc = {
+    latitude: 40.729,
+    longitude: -73.992,
+  };
+  for (let i = 0; i <= 10; i++) {
+    let coords = randomLocation.randomCirclePoint(treasureSrc, 1500);
     const cap = await Capture.create({
       latitude: coords.latitude,
       longitude: coords.longitude,
       radius: defaultRadius,
     });
-    const userId = Math.floor(Math.random() * 2) + 1;
+    //Set it to treasure user
+    await cap.setUser(4);
+  }
+}
+
+//Use with caution
+async function theWholeCountry() {
+  const kansas = {
+    latitude: 39.8283,
+    longitude: -98.5795,
+  };
+  for (let i = 0; i <= 3000; i++) {
+    let coords = randomLocation.randomCirclePoint(kansas, 1000 * 1000);
+    const cap = await Capture.create({
+      latitude: coords.latitude,
+      longitude: coords.longitude,
+      radius: defaultRadius,
+    });
+    //Set it to treasure user
+    const userId = Math.floor(Math.random() * 3) + 1;
     await cap.setUser(userId);
   }
-
-  await users[0].setTeam(teams[0].id);
-  await users[1].setTeam(teams[1].id);
-  await users[2].setTeam(teams[0].id);
-  await caps[0].setUser(users[0].id);
-  await caps[1].setUser(users[1].id);
-  await caps[2].setUser(users[2].id);
-  await caps[3].setUser(users[2].id);
-  await caps[4].setUser(users[1].id);
-  await caps[5].setUser(users[2].id);
-  //FSA capture point
-  await caps[6].setUser(users[2].id);
-
-  console.log(`seeded successfully`);
 }
+
 async function runSeed() {
   console.log('seeding...');
   try {
     await seed();
+    await generateTreasure();
+    // NOT STABLE
+    // await theWholeCountry();
   } catch (err) {
     console.error(err);
     process.exitCode = 1;

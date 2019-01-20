@@ -28,7 +28,7 @@ passport.deserializeUser(async (id, done) => {
 
 //This distance is used to query the Capture table for all nearby capture points when a user tries to capture a new point
 const MAX_DISTANCE_AWAY = 0.05;
-const CAP_RADIUS = 200;
+const CAP_RADIUS = 80;
 
 const { User, Team, Capture } = require('./db/models');
 
@@ -60,7 +60,11 @@ app.get('/teams', async (req, res, next) => {
 app.get('/rememberme', async (req, res, next) => {
   if (req.user) {
     const team = await Team.findById(req.user.dataValues.teamId);
-    const capsPlaced = await Capture.findAll({ where: req.user.dataValues.id });
+    const capsPlaced = await Capture.findAll({
+      where: {
+        userId: req.user.dataValues.id,
+      },
+    });
     console.log(`Returning member of the ${team.name} team`);
     const returningUserInfo = {
       id: req.user.id,

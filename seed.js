@@ -5,7 +5,7 @@ const { User, Team, Capture } = require('./db/models');
 
 const randomLocation = require('random-location');
 
-const defaultRadius = 2000;
+const defaultRadius = 80;
 
 async function seed() {
   await db.sync({ force: true });
@@ -21,10 +21,10 @@ async function seed() {
       name: 'Blue',
     }),
     //Stretch goal
-    Team.create({
-      color: '#FFD70090',
-      name: 'Treasure',
-    }),
+    // Team.create({
+    //   color: '#FFD70090',
+    //   name: 'Treasure',
+    // }),
   ]);
 
   const users = await Promise.all([
@@ -40,10 +40,10 @@ async function seed() {
       username: 'justin',
       password: '123',
     }),
-    User.create({
-      username: 'TreasureProvider',
-      password: 'supersecretpassword',
-    }),
+    // User.create({
+    //   username: 'TreasureProvider',
+    //   password: 'supersecretpassword',
+    // }),
   ]);
 
   const caps = await Promise.all([
@@ -134,7 +134,7 @@ async function seed() {
   await users[0].setTeam(teams[0].id);
   await users[1].setTeam(teams[1].id);
   await users[2].setTeam(teams[0].id);
-  await users[3].setTeam(teams[2].id);
+  // await users[3].setTeam(teams[2].id);
   Promise.all([
     caps[0].setUser(users[0].id),
     caps[1].setUser(users[1].id),
@@ -142,7 +142,7 @@ async function seed() {
     caps[3].setUser(users[2].id),
     caps[4].setUser(users[1].id),
     caps[5].setUser(users[2].id),
-  ]); //FSA capture point
+  ]);
   await caps[6].setUser(users[2].id);
 
   console.log(`seeded successfully`);
@@ -166,13 +166,13 @@ async function generateTreasure() {
 }
 
 //Use with caution
-async function theWholeCountry() {
-  const kansas = {
-    latitude: 39.8283,
-    longitude: -98.5795,
+async function NJ() {
+  const nj = {
+    latitude: 40.7892,
+    longitude: -74.2242,
   };
-  for (let i = 0; i <= 3000; i++) {
-    let coords = randomLocation.randomCirclePoint(kansas, 1000 * 1000);
+  for (let i = 0; i <= 1000; i++) {
+    let coords = randomLocation.randomCirclePoint(nj, 45 * 1000);
     console.log(coords);
     const cap = await Capture.create({
       latitude: coords.latitude,
@@ -189,9 +189,9 @@ async function runSeed() {
   console.log('seeding...');
   try {
     await seed();
-    await generateTreasure();
+    // await generateTreasure();
     // NOT STABLE
-    await theWholeCountry();
+    await NJ();
   } catch (err) {
     console.error(err);
     process.exitCode = 1;

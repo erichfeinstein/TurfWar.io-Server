@@ -59,6 +59,7 @@ app.get('/teams', async (req, res, next) => {
 
 app.get('/rememberme', async (req, res, next) => {
   if (req.user) {
+    console.log('remembering user');
     const team = await Team.findById(req.user.dataValues.teamId);
     const capsPlaced = await Capture.findAll({
       where: {
@@ -137,7 +138,12 @@ app.post('/signup', async (req, res, next) => {
         req.login(user, err =>
           err
             ? next(err)
-            : res.json({ id: user.id, username: user.username, team })
+            : res.json({
+                id: user.id,
+                username: user.username,
+                team,
+                capCount: user.capCount,
+              })
         );
       }
     }

@@ -154,6 +154,10 @@ server.listen(process.env.PORT || 3000, () => console.log('app is running!'));
 // The event will be called when a client is connected.
 websocket.on('connection', async socket => {
   console.log('A client just joined on', socket.id);
+  socket.on('disconnect', () => {
+    socket.disconnect();
+    console.log(socket.id, 'has disconnected!');
+  });
   //Send client current cap info and the current radius for new caps
   const allCaps = await Capture.findAll({
     include: [{ model: User, include: [{ model: Team }] }],
@@ -248,7 +252,7 @@ websocket.on('connection', async socket => {
 });
 
 //Schedule give users a set amount of caps every day at midnight
-const RESET_CAP_COUNT = 15;
+const RESET_CAP_COUNT = 3;
 const schedule = require('node-schedule');
 //Enter cron date with schedule job
 const maintenance = schedule.scheduleJob('30 32 18 * * *', async () => {
@@ -260,6 +264,5 @@ const maintenance = schedule.scheduleJob('30 32 18 * * *', async () => {
       },
     }
   );
-
   websocket.emit('daily-reset');
 });

@@ -5,7 +5,7 @@ const { User, Team, Capture } = require('./db/models');
 
 const randomLocation = require('random-location');
 
-const defaultRadius = 80;
+const defaultRadius = 2000;
 
 async function seed() {
   await db.sync({ force: true });
@@ -111,26 +111,26 @@ async function seed() {
     longitude: -73.851,
   };
 
-  // for (let i = 0; i <= 200; i++) {
-  //   let coords;
-  //   if (i <= 30)
-  //     coords = randomLocation.randomCirclePoint(lowerManhattan, 1100);
-  //   else if (i <= 30) coords = randomLocation.randomCirclePoint(midtown, 1500);
-  //   else if (i <= 50) coords = randomLocation.randomCirclePoint(noho, 1500);
-  //   else if (i <= 100) coords = randomLocation.randomCirclePoint(bronx, 4400);
-  //   else if (i <= 120)
-  //     coords = randomLocation.randomCirclePoint(yankeeStadium, 3000);
-  //   else coords = randomLocation.randomCirclePoint(myRouteToFSA, 5000);
-  //   console.log(coords);
+  for (let i = 0; i <= 200; i++) {
+    let coords;
+    if (i <= 30)
+      coords = randomLocation.randomCirclePoint(lowerManhattan, 1100);
+    else if (i <= 30) coords = randomLocation.randomCirclePoint(midtown, 1500);
+    else if (i <= 50) coords = randomLocation.randomCirclePoint(noho, 1500);
+    else if (i <= 100) coords = randomLocation.randomCirclePoint(bronx, 4400);
+    else if (i <= 120)
+      coords = randomLocation.randomCirclePoint(yankeeStadium, 3000);
+    else coords = randomLocation.randomCirclePoint(myRouteToFSA, 5000);
+    console.log(coords);
 
-  //   const cap = await Capture.create({
-  //     latitude: coords.latitude,
-  //     longitude: coords.longitude,
-  //     radius: defaultRadius,
-  //   });
-  //   const userId = Math.floor(Math.random() * 3) + 1;
-  //   await cap.setUser(userId);
-  // }
+    const cap = await Capture.create({
+      latitude: coords.latitude,
+      longitude: coords.longitude,
+      radius: defaultRadius,
+    });
+    const userId = Math.floor(Math.random() * 3) + 1;
+    await cap.setUser(userId);
+  }
   await users[0].setTeam(teams[0].id);
   await users[1].setTeam(teams[1].id);
   await users[2].setTeam(teams[0].id);
@@ -173,6 +173,7 @@ async function theWholeCountry() {
   };
   for (let i = 0; i <= 3000; i++) {
     let coords = randomLocation.randomCirclePoint(kansas, 1000 * 1000);
+    console.log(coords);
     const cap = await Capture.create({
       latitude: coords.latitude,
       longitude: coords.longitude,
@@ -190,7 +191,7 @@ async function runSeed() {
     await seed();
     await generateTreasure();
     // NOT STABLE
-    // await theWholeCountry();
+    await theWholeCountry();
   } catch (err) {
     console.error(err);
     process.exitCode = 1;

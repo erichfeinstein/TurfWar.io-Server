@@ -13,7 +13,7 @@ const User = db.define('user', {
   },
   capCount: {
     type: Sequelize.INTEGER,
-    defaultValue: 15,
+    defaultValue: 3,
   },
   password: {
     type: Sequelize.STRING,

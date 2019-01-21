@@ -48,114 +48,21 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.get('/teams', async (req, res, next) => {
-  try {
-    const teams = await Team.findAll();
-    res.send(teams);
-  } catch (err) {
-    next(err);
-  }
-});
-
-app.get('/rememberme', async (req, res, next) => {
-  if (req.user) {
-    console.log('remembering user');
-    const team = await Team.findById(req.user.dataValues.teamId);
-    const capsPlaced = await Capture.findAll({
-      where: {
-        userId: req.user.dataValues.id,
-      },
-    });
-    console.log(`Returning member of the ${team.name} team`);
-    const returningUserInfo = {
-      id: req.user.id,
-      username: req.user.username,
-      team,
-      capCount: req.user.capCount,
-      capsPlaced,
-    };
-    res.json(returningUserInfo);
-  } else res.json({});
-});
+// auth and api routes
+app.use('/auth', require('./auth'));
+app.use('/api', require('./api'));
 
 //Landing page for Heroku
 app.get('*', function(req, res) {
   res.sendfile('./index.html');
 });
 
-app.post('/login', async (req, res, next) => {
-  try {
-    const user = await User.findOne({
-      where: { username: req.body.username },
-      include: [{ model: Team }],
-    });
-    if (!user) {
-      console.log('No such user found:', req.body.username);
-      res.status(401).send('Wrong username and/or password');
-    } else if (!user.correctPassword(req.body.password)) {
-      console.log('Incorrect password for user:', req.body.username);
-      res.status(401).send('Wrong username and/or password');
-    } else {
-      //We send the user their cap count info so they can see if they have caps available, but capping uses info from the DB
-      req.login(user, err =>
-        err
-          ? next(err)
-          : res.json({
-              id: user.id,
-              username: user.username,
-              team: user.team,
-              capCount: user.capCount,
-            })
-      );
-    }
-  } catch (err) {
-    next(err);
-  }
-});
-
-app.post('/logout', (req, res) => {
-  console.log('user signing out');
-  req.logout();
-  req.session.destroy();
-  res.send('logged out');
-});
-
-app.post('/signup', async (req, res, next) => {
-  try {
-    //Check that teamId is valid
-    const team = await Team.findById(req.body.teamId);
-    console.log(`user signing up and joining ${team.name} team`);
-    if (team) {
-      const user = await User.create({
-        username: req.body.username,
-        password: req.body.password,
-      });
-      await user.setTeam(team.id);
-      if (!user) {
-        console.log('Problem creating account for user');
-        res.status(401).send('There was a problem creating your account');
-      } else {
-        req.login(user, err =>
-          err
-            ? next(err)
-            : res.json({
-                id: user.id,
-                username: user.username,
-                team,
-                capCount: user.capCount,
-              })
-        );
-      }
-    }
-  } catch (err) {
-    next(err);
-  }
-});
-
 sessionStore.sync();
 var server = http.Server(app);
 var websocket = socketio(server);
 server.listen(process.env.PORT || 3000, () => console.log('app is running!'));
+
+//Websocket
 
 // The event will be called when a client is connected.
 websocket.on('connection', async socket => {

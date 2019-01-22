@@ -1,16 +1,47 @@
 import React from 'react';
 import axios from 'axios';
 
+const second = 1000;
+const minute = second * 60;
+const hour = minute * 60;
+const day = hour * 24;
+
 export default class LandingPage extends React.Component {
   constructor() {
     super();
     this.state = {
+      days: 0,
+      hours: 0,
+      minutes: 0,
+      seconds: 0,
       winningTeam: {},
+      endTime: {},
     };
+    this.showRemaining = this.showRemaining.bind(this);
   }
   async componentDidMount() {
     const winningTeam = await axios.get('/api/teams/lastwinner');
+    const end = await axios.get('/end-time');
+    this.setState({
+      endTime: new Date(end.data),
+    });
+    this.interval = setInterval(this.showRemaining, 1000);
     this.setState({ winningTeam: winningTeam.data });
+  }
+  showRemaining() {
+    var end = this.state.endTime;
+    var now = new Date();
+    var diff = end - now;
+    var days = Math.floor(diff / day);
+    var hours = Math.floor((diff % day) / hour);
+    var minutes = Math.floor((diff % hour) / minute);
+    var seconds = Math.floor((diff % minute) / second);
+    this.setState({
+      days,
+      hours,
+      minutes,
+      seconds,
+    });
   }
   render() {
     return (
@@ -22,9 +53,18 @@ export default class LandingPage extends React.Component {
             {this.state.winningTeam.name}
           </h3>
           <h3>Time remaining this round:</h3>
+          {this.state.days ? (
+            <h3 style={{ color: 'grey' }}>{`${this.state.days} days ${
+              this.state.hours
+            } hours ${this.state.minutes} minutes ${
+              this.state.seconds
+            } seconds`}</h3>
+          ) : (
+            <div />
+          )}
         </div>
         <div id="desc" align="center">
-          <div align="center" style={{ width: '400px' }}>
+          <div align="center">
             <p style={{ textAlign: 'left' }}>
               TurfWar.io is a GPS-based, global game of territory control.
               Players can join teams and use capture tokens to take over

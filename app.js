@@ -53,8 +53,13 @@ app.use(passport.session());
 app.use('/auth', require('./auth'));
 app.use('/api', require('./api'));
 
-app.get('/winner', (req, res, next) => {
-  res.send(lastTeamWinner);
+//Get the local time of the next round end time of the server
+app.get('/end-time', (req, res, next) => {
+  var date = new Date();
+  //Gets the next friday at noon, to show countdown to game end
+  date.setDate(date.getDate() + (5 + 7 - date.getDay()) % 7);
+  date.setHours(12, 0, 0, 0);
+  res.send(date);
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -187,7 +192,8 @@ const daily = schedule.scheduleJob('30 32 18 * * *', async () => {
 });
 
 //Weekly reset
-const weekly = schedule.scheduleJob('0 0 12 * * 6', async () => {
+//0 0 12 * * 6
+const weekly = schedule.scheduleJob('30 28 11 * * *', async () => {
   const allCaps = await Capture.findAll({
     include: [{ model: User, include: [{ model: Team }] }],
   });
@@ -217,7 +223,11 @@ const weekly = schedule.scheduleJob('0 0 12 * * 6', async () => {
   lastTeamWinner.update({
     isLastWinner: true,
   });
-  //Destroy all captures
+  //Destroy all captures to reset the game
+  Capture.destroy({
+    where: {},
+    truncate: true,
+  });
 
   console.log(
     '///////////////////////////////////////////////////////////////'

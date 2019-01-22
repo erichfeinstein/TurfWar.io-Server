@@ -15,16 +15,12 @@ async function seed() {
     Team.create({
       color: '#ff000090',
       name: 'Red',
+      isLastWinner: true,
     }),
     Team.create({
       color: '#2200ff90',
       name: 'Blue',
     }),
-    //Stretch goal
-    // Team.create({
-    //   color: '#FFD70090',
-    //   name: 'Treasure',
-    // }),
   ]);
 
   const users = await Promise.all([
@@ -40,10 +36,6 @@ async function seed() {
       username: 'justin',
       password: '123',
     }),
-    // User.create({
-    //   username: 'TreasureProvider',
-    //   password: 'supersecretpassword',
-    // }),
   ]);
 
   const caps = await Promise.all([
@@ -148,23 +140,6 @@ async function seed() {
   console.log(`seeded successfully`);
 }
 
-async function generateTreasure() {
-  const treasureSrc = {
-    latitude: 40.729,
-    longitude: -73.992,
-  };
-  for (let i = 0; i <= 10; i++) {
-    let coords = randomLocation.randomCirclePoint(treasureSrc, 1500);
-    const cap = await Capture.create({
-      latitude: coords.latitude,
-      longitude: coords.longitude,
-      radius: defaultRadius,
-    });
-    //Set it to treasure user
-    await cap.setUser(4);
-  }
-}
-
 //Use with caution
 async function NJ() {
   const nj = {
@@ -189,8 +164,6 @@ async function runSeed() {
   console.log('seeding...');
   try {
     await seed();
-    // await generateTreasure();
-    // NOT STABLE
     await NJ();
   } catch (err) {
     console.error(err);

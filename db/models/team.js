@@ -11,6 +11,10 @@ const Team = db.define('team', {
     type: Sequelize.STRING,
     defaultValue: '000000',
   },
+  isLastWinner: {
+    type: Sequelize.BOOLEAN,
+    defaultValue: false,
+  },
 });
 
 module.exports = Team;

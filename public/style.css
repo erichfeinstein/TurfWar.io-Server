@@ -1,0 +1,32 @@
+body {
+  font-family: 'Roboto Condensed', sans-serif;
+  background-color: #eeeeee;
+}
+p {
+  line-height: 1.5em;
+}
+hr {
+  width: 100%;
+  border-color: black;
+}
+ul {
+  background-color: white;
+  list-style: none;
+  padding-left: 0;
+}
+#desc {
+  max-width: 400px;
+  padding: 2em;
+  margin-top: 10vh;
+  background-color: #cccccc;
+}
+h1 {
+  font-size: 35pt;
+}
+a {
+  font-size: 15pt;
+}
+#links {
+  display: flex;
+  justify-content: space-between;
+}

@@ -1,4 +1,5 @@
 var express = require('express');
+const path = require('path');
 var http = require('http');
 var socketio = require('socket.io');
 var geolib = require('geolib');
@@ -52,9 +53,14 @@ app.use(passport.session());
 app.use('/auth', require('./auth'));
 app.use('/api', require('./api'));
 
+app.get('/winner', (req, res, next) => {
+  res.send(lastTeamWinner);
+});
+
+app.use(express.static(path.join(__dirname, 'public')));
 //Landing page for Heroku
 app.get('*', function(req, res) {
-  res.sendfile('./index.html');
+  res.sendfile('./public/index.html');
 });
 
 sessionStore.sync();
@@ -168,7 +174,7 @@ websocket.on('connection', async socket => {
 const RESET_CAP_COUNT = 3;
 const schedule = require('node-schedule');
 //Enter cron date with schedule job
-const maintenance = schedule.scheduleJob('30 32 18 * * *', async () => {
+const daily = schedule.scheduleJob('30 32 18 * * *', async () => {
   await User.update(
     { capCount: RESET_CAP_COUNT },
     {
@@ -178,4 +184,46 @@ const maintenance = schedule.scheduleJob('30 32 18 * * *', async () => {
     }
   );
   websocket.emit('daily-reset');
+});
+
+//Weekly reset
+const weekly = schedule.scheduleJob('0 0 12 * * 6', async () => {
+  const allCaps = await Capture.findAll({
+    include: [{ model: User, include: [{ model: Team }] }],
+  });
+  let totalPoints = {};
+  allCaps.map(cap => {
+    if (!totalPoints[cap.user.team.id]) totalPoints[cap.user.team.id] = 1;
+    else totalPoints[cap.user.team.id] = totalPoints[cap.user.team.id] + 1;
+  });
+  let max = 0;
+  let teamId = 0;
+  let teamsPoints = Object.entries(totalPoints);
+  for (let i = 0; i < teamsPoints.length; i++) {
+    if (teamsPoints[i][1] > max) {
+      max = teamsPoints[i][1];
+      teamId = Number(teamsPoints[i][0]);
+    }
+  }
+  await Team.update(
+    { isLastWinner: false },
+    {
+      where: {
+        isLastWinner: true,
+      },
+    }
+  );
+  let lastTeamWinner = await Team.findById(teamId);
+  lastTeamWinner.update({
+    isLastWinner: true,
+  });
+  //Destroy all captures
+
+  console.log(
+    '///////////////////////////////////////////////////////////////'
+  );
+  console.log('Winner this week:', lastTeamWinner.name);
+  console.log(
+    '///////////////////////////////////////////////////////////////'
+  );
 });

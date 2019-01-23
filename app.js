@@ -193,7 +193,7 @@ const daily = schedule.scheduleJob('30 32 18 * * *', async () => {
 
 //Weekly reset
 //0 0 12 * * 6
-const weekly = schedule.scheduleJob('30 28 11 * * *', async () => {
+const weekly = schedule.scheduleJob('0 0 12 * * 6', async () => {
   const allCaps = await Capture.findAll({
     include: [{ model: User, include: [{ model: Team }] }],
   });

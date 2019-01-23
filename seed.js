@@ -141,7 +141,7 @@ async function seed() {
 }
 
 //Use with caution
-async function NJ() {
+async function generateLotsOfCaps() {
   const nj = {
     latitude: 40.7892,
     longitude: -74.2242,
@@ -163,8 +163,7 @@ async function NJ() {
 async function runSeed() {
   console.log('seeding...');
   try {
-    await seed();
-    await NJ();
+    // await seed();
   } catch (err) {
     console.error(err);
     process.exitCode = 1;

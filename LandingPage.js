@@ -48,17 +48,25 @@ export default class LandingPage extends React.Component {
       <div align="center">
         <h1>TurfWar.io</h1>
         <div id="last-winner">
-          <h3>Last week's winner:</h3>
-          <h3 style={{ color: this.state.winningTeam.color }}>
-            {this.state.winningTeam.name}
-          </h3>
-          <h3>Time remaining this round:</h3>
+          {this.state.winningTeam ? (
+            <div>
+              <h3>Last week's winner:</h3>
+              <h3 style={{ color: this.state.winningTeam.color }}>
+                {this.state.winningTeam.name}
+              </h3>
+            </div>
+          ) : (
+            <div />
+          )}
           {this.state.days ? (
-            <h3 style={{ color: 'grey' }}>{`${this.state.days} days ${
-              this.state.hours
-            } hours ${this.state.minutes} minutes ${
-              this.state.seconds
-            } seconds`}</h3>
+            <div>
+              <h3>Time remaining this round:</h3>
+              <h3 style={{ color: 'grey' }}>{`${this.state.days} days ${
+                this.state.hours
+              } hours ${this.state.minutes} minutes ${
+                this.state.seconds
+              } seconds`}</h3>
+            </div>
           ) : (
             <div />
           )}

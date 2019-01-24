@@ -59,7 +59,7 @@ app.get('/end-time', (req, res, next) => {
   //Gets the next friday at noon, to show countdown to game end
   date.setDate(date.getDate() + (5 + 7 - date.getDay()) % 7);
   date.setHours(12, 0, 0, 0);
-  res.send(date);
+  res.status(200).send(date);
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -176,10 +176,11 @@ websocket.on('connection', async socket => {
 });
 
 //Schedule give users a set amount of caps every day at midnight
+//0 0 0 * * *
 const RESET_CAP_COUNT = 3;
 const schedule = require('node-schedule');
 //Enter cron date with schedule job
-const daily = schedule.scheduleJob('30 32 18 * * *', async () => {
+const daily = schedule.scheduleJob('0 0 0 * * *', async () => {
   await User.update(
     { capCount: RESET_CAP_COUNT },
     {

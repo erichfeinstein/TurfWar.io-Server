@@ -28,7 +28,7 @@ export default class LandingPage extends React.Component {
     });
     this.interval = setInterval(this.showRemaining, 1000);
   }
-  showRemaining() {
+  async showRemaining() {
     var end = this.state.endTime;
     var now = new Date();
     var diff = end - now;
@@ -36,7 +36,7 @@ export default class LandingPage extends React.Component {
     var hours = Math.floor((diff % day) / hour);
     var minutes = Math.floor((diff % hour) / minute);
     var seconds = Math.floor((diff % minute) / second);
-    this.setState({
+    await this.setState({
       days,
       hours,
       minutes,
@@ -58,18 +58,14 @@ export default class LandingPage extends React.Component {
           ) : (
             <div />
           )}
-          {this.state.days ? (
-            <div>
-              <h3>Time remaining this round:</h3>
-              <h3 style={{ color: 'grey' }}>{`${this.state.days} days ${
-                this.state.hours
-              } hours ${this.state.minutes} minutes ${
-                this.state.seconds
-              } seconds`}</h3>
-            </div>
-          ) : (
-            <div />
-          )}
+          <div>
+            <h3>Time remaining this round:</h3>
+            <h3 style={{ color: 'grey' }}>{`${this.state.days} days ${
+              this.state.hours
+            } hours ${this.state.minutes} minutes ${
+              this.state.seconds
+            } seconds`}</h3>
+          </div>
         </div>
         <div id="desc" align="center">
           <div align="center">

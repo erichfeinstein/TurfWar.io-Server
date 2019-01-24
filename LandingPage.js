@@ -21,12 +21,12 @@ export default class LandingPage extends React.Component {
   }
   async componentDidMount() {
     const winningTeam = await axios.get('/api/teams/lastwinner');
+    this.setState({ winningTeam: winningTeam.data });
     const end = await axios.get('/end-time');
-    this.setState({
+    await this.setState({
       endTime: new Date(end.data),
     });
     this.interval = setInterval(this.showRemaining, 1000);
-    this.setState({ winningTeam: winningTeam.data });
   }
   showRemaining() {
     var end = this.state.endTime;

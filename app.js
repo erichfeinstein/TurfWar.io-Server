@@ -59,7 +59,7 @@ app.get('/end-time', (req, res, next) => {
   //Gets the next friday at noon, to show countdown to game end
   date.setDate(date.getDate() + (5 + 7 - date.getDay()) % 7);
   date.setHours(12, 0, 0, 0);
-  res.status(200).send(date);
+  res.status(200).json(date);
 });
 
 app.use(express.static(path.join(__dirname, 'public')));

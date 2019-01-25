@@ -56,8 +56,14 @@ app.use('/api', require('./api'));
 //Get the local time of the next round end time of the server
 app.get('/end-time', (req, res, next) => {
   var date = new Date();
-  //Gets the next friday at noon, to show countdown to game end
-  date.setDate(date.getDate() + (5 + 7 - date.getDay()) % 7);
+  //Check if today is Friday and if noon today has passed
+  if (date.getDay() === 5 && date.getHours() >= 12) {
+    date.setDate(date.getDate() + 7);
+  } else {
+    //Gets the next friday
+    date.setDate(date.getDate() + (5 + 7 - date.getDay()) % 7);
+  }
+  //Set hours at noon
   date.setHours(12, 0, 0, 0);
   res.status(200).json(date);
 });
@@ -193,8 +199,8 @@ const daily = schedule.scheduleJob('0 0 0 * * *', async () => {
 });
 
 //Weekly reset
-//0 0 12 * * 6
-const weekly = schedule.scheduleJob('0 0 12 * * 6', async () => {
+//0 0 12 * * 5
+const weekly = schedule.scheduleJob('0 0 12 * * 5', async () => {
   const allCaps = await Capture.findAll({
     include: [{ model: User, include: [{ model: Team }] }],
   });
